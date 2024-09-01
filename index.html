@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Page</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script type="text/babel">
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    vehicleName: '',
+                    vehicleDetails: null,
+                    error: null
+                };
+            }
+
+            handleInputChange = (event) => {
+                this.setState({ vehicleName: event.target.value });
+            }
+
+            fetchVehicleDetails = async () => {
+                const { vehicleName } = this.state;
+                try {
+                    const response = await fetch(`https://gta.now.sh/api/vehicles/${vehicleName}`);
+                    if (!response.ok) {
+                        throw new Error('Vehicle not found');
+                    }
+                    const data = await response.json();
+                    this.setState({
+                        vehicleDetails: {
+                            images: data.images,
+                            manufacturer: data.manufacturer,
+                            model: data.model,
+                            seats: data.seats,
+                            price: data.price,
+                            topSpeedMph: data.topSpeed.mph,
+                            topSpeedKmh: data.topSpeed.kmh,
+                            speed: data.speed,
+                            acceleration: data.acceleration,
+                            braking: data.braking,
+                            handling: data.handling
+                        },
+                        error: null
+                    });
+                } catch (error) {
+                    this.setState({ error: error.message, vehicleDetails: null });
+                    alert('No vehicle found');
+                }
+            }
+
+            render() {
+                const { vehicleName, vehicleDetails, error } = this.state;
+                return (
+                    <div className="container">
+                        <h1>This is React App Page</h1>
+                        <input
+                            type="text"
+                            value={vehicleName}
+                            onChange={this.handleInputChange}
+                            placeholder="Enter vehicle name"
+                        />
+                        <button onClick={this.fetchVehicleDetails}>Fetch Vehicle Details</button>
+                        {error && <p style={{ color: 'red' }}>{error}</p>}
+                        {vehicleDetails && (
+                            <div>
+                                <h2>Vehicle Details</h2>
+                                <img src={vehicleDetails.images.frontQuarter} alt={vehicleDetails.model} />
+                                <p>Manufacturer: {vehicleDetails.manufacturer}</p>
+                                <p>Model: {vehicleDetails.model}</p>
+                                <p>Seats: {vehicleDetails.seats}</p>
+                                <p>Price: {vehicleDetails.price}</p>
+                                <p>Top Speed: {vehicleDetails.topSpeedMph} mph / {vehicleDetails.topSpeedKmh} km/h</p>
+                                <p>Speed: {vehicleDetails.speed}</p>
+                                <p>Acceleration: {vehicleDetails.acceleration}</p>
+                                <p>Braking: {vehicleDetails.braking}</p>
+                                <p>Handling: {vehicleDetails.handling}</p>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+        }
+
+        ReactDOM.render(<App />, document.getElementById("app"));
+    </script>
+</body>
+</html>
